@@ -6,6 +6,28 @@ SRC_DIR="$(dirname "$(realpath "$0")")"
 OUT_DIR="$SRC_DIR/out"
 TOOLS_DIR="$OUT_DIR/tools/bin"
 
+echo "========================================"
+echo " DEBUG build_dependencies"
+echo "========================================"
+echo "[DEBUG] \$0:              $0"
+echo "[DEBUG] realpath \$0:     $(realpath "$0")"
+echo "[DEBUG] SRC_DIR:         $SRC_DIR"
+echo "[DEBUG] OUT_DIR:         $OUT_DIR"
+echo "[DEBUG] GITHUB_WORKSPACE: ${GITHUB_WORKSPACE:-<unset>}"
+echo
+echo "[DEBUG] SRC_DIR contents:"
+ls -la "$SRC_DIR"
+echo
+echo "[DEBUG] Expected samloader:"
+echo "$SRC_DIR/external/samloader"
+echo
+echo "[DEBUG] Checking:"
+if [ -d "$SRC_DIR/external/samloader" ]; then
+    echo "[DEBUG] EXISTS"
+else
+    echo "[DEBUG] DOES NOT EXIST"
+fi
+echo "========================================"
 mkdir -p "$TOOLS_DIR"
 
 # ============================================================
