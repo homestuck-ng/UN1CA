@@ -6,7 +6,7 @@
 #
 
 set -e
-
+FIRMWARE_VERSION="S901EXXS7CWI1/S901EOXM7CWH6/S901EXXS7CWH6/S901EXXS7CWI1"
 # [
 GET_LATEST_FIRMWARE()
 {
@@ -30,6 +30,7 @@ DOWNLOAD_FIRMWARE()
         -r "$CSC" \
         -i "$IMEI" \
         download \
+        -v "$FIRMWARE_VERSION" \
         -O "$OUT"
 
     ZIP_FILE="$(find "$OUT" -type f -name "*.zip" | sort -r | head -n 1)"
@@ -62,7 +63,7 @@ for i in "${TARGET_EXTRA_FIRMWARES[@]}"; do
 done
 
 FORCE=false
-
+FIRMWARE_VERSION=""
 while [ "$#" != 0 ]; do
     case "$1" in
         "-f" | "--force")
