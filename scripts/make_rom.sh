@@ -89,18 +89,18 @@ if $BUILD_ROM; then
     echo -e "- Creating work dir..."
     bash "$SRC_DIR/scripts/internal/create_work_dir.sh"
 
-    echo -e "\n- Applying ROM patches..."
-    bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/patches"
-    [[ -d "$SRC_DIR/target/$TARGET_CODENAME/patches" ]] \
-        && bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/target/$TARGET_CODENAME/patches"
+    #echo -e "\n- Applying ROM patches..."
+    #bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/patches"
+    #[[ -d "$SRC_DIR/target/$TARGET_CODENAME/patches" ]] \
+    #    && bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/target/$TARGET_CODENAME/patches"
 
-    echo -e "\n- Applying ROM mods..."
-    bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/mods"
+    #echo -e "\n- Applying ROM mods..."
+    #bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/mods"
 
-    echo -e "\n- Recompiling APKs/JARs..."
-    while read -r i; do
-        bash "$SRC_DIR/scripts/apktool.sh" b "$i"
-    done <<< "$(find "$OUT_DIR/apktool" -type d \( -name "*.apk" -o -name "*.jar" \) -printf "%p\n" | sed "s.$OUT_DIR/apktool..")"
+    #echo -e "\n- Recompiling APKs/JARs..."
+    #while read -r i; do
+    #    bash "$SRC_DIR/scripts/apktool.sh" b "$i"
+    #done <<< "$(find "$OUT_DIR/apktool" -type d \( -name "*.apk" -o -name "*.jar" \) -printf "%p\n" | sed "s.$OUT_DIR/apktool..")"
 
     echo ""
     echo -n "$WORK_DIR_HASH" > "$WORK_DIR/.completed"
