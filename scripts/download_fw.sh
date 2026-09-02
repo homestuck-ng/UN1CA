@@ -1,67 +1,65 @@
 #!/usr/bin/env bash
-#
-# Copyright (C) 2023 Salvo Giangreco
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
 
-# shellcheck disable=SC2162
+#
+# Copyright (C) 2026
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 
 set -e
 
 # [
 GET_LATEST_FIRMWARE()
 {
-    curl -s --retry 5 --retry-delay 5 "https://fota-cloud-dn.ospserver.net/firmware/$REGION/$MODEL/version.xml" \
-        | grep latest | sed 's/^[^>]*>//' | sed 's/<.*//'
+    curl -s --retry 3 -m 5 \
+        "https://fota-cloud-dn.ospserver.net/firmware/$CSC/$MODEL/version.xml" \
+        | perl -nE 'say $1 if /<latest[^>]*>(.*?)<\/latest>/'
 }
 
 DOWNLOAD_FIRMWARE()
 {
-    local PDR
-    PDR="$(pwd)"
+    local OUT="$ODIN_DIR/${MODEL}_${CSC}"
+    local ZIP_FILE
 
-    cd "$ODIN_DIR"
-    { samfirm -m "$MODEL" -r "$REGION" -i "$IMEI" > /dev/null; } 2>&1 \
-        && touch "$ODIN_DIR/${MODEL}_${REGION}/.downloaded" \
-        || exit 1
-    [ -f "$ODIN_DIR/${MODEL}_${REGION}/.downloaded" ] && {
-        echo -n "$(find "$ODIN_DIR/${MODEL}_${REGION}" -name "AP*" -exec basename {} \; | cut -d "_" -f 2)/"
-        echo -n "$(find "$ODIN_DIR/${MODEL}_${REGION}" -name "CSC*" -exec basename {} \; | cut -d "_" -f 3)/"
-        echo -n "$(find "$ODIN_DIR/${MODEL}_${REGION}" -name "CP*" -exec basename {} \; | cut -d "_" -f 2)"
-    } >> "$ODIN_DIR/${MODEL}_${REGION}/.downloaded"
+    rm -rf "$OUT"
+    mkdir -p "$OUT"
 
-    echo ""
-    cd "$PDR"
+    echo "- Downloading $MODEL firmware with $CSC CSC..."
+
+    samloader \
+        -m "$MODEL" \
+        -r "$CSC" \
+        -i "$IMEI" \
+        download \
+        -O "$OUT"
+
+    ZIP_FILE="$(find "$OUT" -type f -name "*.zip" | sort -r | head -n 1)"
+
+    if [ ! "$ZIP_FILE" ] || [ ! -f "$ZIP_FILE" ]; then
+        echo "! Download failed: firmware ZIP not found"
+        exit 1
+    fi
+
+    echo "- Extracting $(basename "$ZIP_FILE")..."
+
+    unzip -o "$ZIP_FILE" -d "$OUT"
+    rm -f "$ZIP_FILE"
+
+    echo -n "$LATEST_FIRMWARE" > "$OUT/.downloaded"
+
+    echo "- Firmware downloaded successfully"
 }
 
 FIRMWARES=( "$SOURCE_FIRMWARE" "$TARGET_FIRMWARE" )
-IFS=':' read -a SOURCE_EXTRA_FIRMWARES <<< "$SOURCE_EXTRA_FIRMWARES"
-if [ "${#SOURCE_EXTRA_FIRMWARES[@]}" -ge 1 ]; then
-    for i in "${SOURCE_EXTRA_FIRMWARES[@]}"
-    do
-        FIRMWARES+=( "$i" )
-    done
-fi
-IFS=':' read -a TARGET_EXTRA_FIRMWARES <<< "$TARGET_EXTRA_FIRMWARES"
-if [ "${#TARGET_EXTRA_FIRMWARES[@]}" -ge 1 ]; then
-    for i in "${TARGET_EXTRA_FIRMWARES[@]}"
-    do
-        FIRMWARES+=( "$i" )
-    done
-fi
-# ]
+
+IFS=':' read -ra SOURCE_EXTRA_FIRMWARES <<< "$SOURCE_EXTRA_FIRMWARES"
+for i in "${SOURCE_EXTRA_FIRMWARES[@]}"; do
+    [ -n "$i" ] && FIRMWARES+=( "$i" )
+done
+
+IFS=':' read -ra TARGET_EXTRA_FIRMWARES <<< "$TARGET_EXTRA_FIRMWARES"
+for i in "${TARGET_EXTRA_FIRMWARES[@]}"; do
+    [ -n "$i" ] && FIRMWARES+=( "$i" )
+done
 
 FORCE=false
 
@@ -82,32 +80,53 @@ done
 
 mkdir -p "$ODIN_DIR"
 
-for i in "${FIRMWARES[@]}"
-do
-    MODEL=$(echo -n "$i" | cut -d "/" -f 1)
-    REGION=$(echo -n "$i" | cut -d "/" -f 2)
-    IMEI=$(echo -n "$i" | cut -d "/" -f 3)
+for i in "${FIRMWARES[@]}"; do
 
-    if [ -f "$ODIN_DIR/${MODEL}_${REGION}/.downloaded" ]; then
-        [ -z "$(GET_LATEST_FIRMWARE)" ] && continue
-        if [[ "$(GET_LATEST_FIRMWARE)" != "$(cat "$ODIN_DIR/${MODEL}_${REGION}/.downloaded")" ]]; then
-            if $FORCE; then
-                echo "- Updating $MODEL firmware with $REGION CSC..."
-                rm -rf "$ODIN_DIR/${MODEL}_${REGION}" && DOWNLOAD_FIRMWARE
-            else
-                echo    "- $MODEL firmware with $REGION CSC already downloaded"
-                echo    "  A newer version of this device's firmware is available."
-                echo -e "  To download, clean your Odin firmwares directory or run this cmd with \"--force\"\n"
-                continue
-            fi
-        else
-            echo -e "- $MODEL firmware with $REGION CSC already downloaded\n"
+    MODEL="$(echo "$i" | cut -d "/" -f 1)"
+    CSC="$(echo "$i" | cut -d "/" -f 2)"
+    IMEI="$(echo "$i" | cut -d "/" -f 3)"
+
+    if [ -z "$MODEL" ] || [ -z "$CSC" ] || [ -z "$IMEI" ]; then
+        echo "! Invalid firmware string: $i"
+        exit 1
+    fi
+
+    echo
+    echo "- Processing $MODEL firmware with $CSC CSC"
+
+    LATEST_FIRMWARE="$(GET_LATEST_FIRMWARE)"
+
+    if [ -z "$LATEST_FIRMWARE" ]; then
+        echo "! Latest firmware could not be fetched"
+        exit 1
+    fi
+
+    echo "  Latest firmware: $LATEST_FIRMWARE"
+
+    if [ -f "$ODIN_DIR/${MODEL}_${CSC}/.downloaded" ]; then
+
+        DOWNLOADED="$(cat "$ODIN_DIR/${MODEL}_${CSC}/.downloaded")"
+
+        if [ "$DOWNLOADED" = "$LATEST_FIRMWARE" ]; then
+            echo "  Firmware already downloaded"
             continue
         fi
+
+        if $FORCE; then
+            echo "- Updating $MODEL firmware with $CSC CSC..."
+            DOWNLOAD_FIRMWARE
+        else
+            echo "  A newer firmware is available."
+            echo "  Use --force to download it."
+            continue
+        fi
+
     else
-        echo "- Downloading $MODEL firmware with $REGION CSC..."
-        rm -rf "$ODIN_DIR/${MODEL}_${REGION}" && DOWNLOAD_FIRMWARE
+
+        DOWNLOAD_FIRMWARE
+
     fi
+
 done
 
 exit 0
