@@ -94,15 +94,22 @@ fi
 unset -f _GET_SRC_DIR
 
 export SRC_DIR
-export OUT_DIR="$SRC_DIR/out"
-export TMP_DIR="$OUT_DIR/tmp"
-export ODIN_DIR="$OUT_DIR/odin"
-export FW_DIR="$OUT_DIR/fw"
-export APKTOOL_DIR="$OUT_DIR/apktool"
-export WORK_DIR="$OUT_DIR/work_dir"
-export TOOLS_DIR="$OUT_DIR/tools/bin"
-export PATH="$TOOLS_DIR:$PATH"
 
+export OUT_DIR="$SRC_DIR/out"
+
+export TMP_DIR="$OUT_DIR/tmp"
+
+export ODIN_DIR="$OUT_DIR/odin"
+
+export FW_DIR="$OUT_DIR/fw"
+
+export APKTOOL_DIR="$OUT_DIR/apktool"
+
+export WORK_DIR="$OUT_DIR/work_dir"
+
+export TOOLS_DIR="$OUT_DIR/tools/bin"
+
+export PATH="$TOOLS_DIR:$OUT_DIR/tools/venv/bin:$PATH"
 TARGETS=()
 while IFS='' read -r t; do TARGETS+=("$t"); done < <(find "$SRC_DIR/target" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort)
 
