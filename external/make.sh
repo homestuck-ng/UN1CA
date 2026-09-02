@@ -2,7 +2,7 @@
 
 set -e
 
-SRC_DIR="$(dirname "$(realpath "$0")")"
+SRC_DIR="$(dirname "$(dirname "$(realpath "$0")")")"
 OUT_DIR="$SRC_DIR/out"
 TOOLS_DIR="$OUT_DIR/tools/bin"
 
