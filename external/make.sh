@@ -168,13 +168,7 @@ IMG2SDAT_EXEC=(
     "blockimgdiff.py" "common.py" "images.py" "img2sdat" "rangelib.py" "sparse_img.py"
 )
 CHECK_TOOLS "${IMG2SDAT_EXEC[@]}" && IMG2SDAT=false
-SAMFIRM_EXEC=(
-    "samfirm"
-)
-CHECK_TOOLS "${SAMFIRM_EXEC[@]}" && SAMFIRM=false
-SIGNAPK_EXEC=(
-    "signapk" "signapk.jar"
-)
+
 CHECK_TOOLS "${SIGNAPK_EXEC[@]}" && SIGNAPK=false
 SMALI_EXEC=(
     "android-smali.jar" "baksmali" "smali" "smali-baksmali.jar"
@@ -231,15 +225,7 @@ if $IMG2SDAT; then
 
     BUILD "img2sdat" "$SRC_DIR/external/img2sdat" "${IMG2SDAT_CMDS[@]}"
 fi
-if $SAMFIRM; then
-    SAMFIRM_CMDS=(
-        "npm install"
-        "npm run build"
-        "cp --preserve=all \"dist/index.js\" \"$TOOLS_DIR/samfirm\""
-    )
 
-    BUILD "samfirm.js" "$SRC_DIR/external/samfirm.js" "${SAMFIRM_CMDS[@]}"
-fi
 if $SAMLOADER; then
     SAMLOADER_VENV="$OUT_DIR/tools/venv"
     SAMLOADER_EXEC="$SAMLOADER_VENV/bin/samloader"
