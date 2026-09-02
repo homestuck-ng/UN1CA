@@ -118,7 +118,7 @@ fi
 # ============================================================
 
 SAMLOADER_VENV="$OUT_DIR/tools/venv"
-SAMLOADER_EXEC="$SAMLOADER_VENV/bin/samloader-master"
+SAMLOADER_EXEC="$SAMLOADER_VENV/bin/samloader"
 
 if [ -x "$SAMLOADER_EXEC" ]; then
     SAMLOADER=false
