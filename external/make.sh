@@ -137,7 +137,7 @@ ANDROID_TOOLS=true
 APKTOOL=true
 EROFS_UTILS=true
 IMG2SDAT=true
-SAMFIRM=true
+SAMLOADER=true
 SIGNAPK=true
 SMALI=true
 
@@ -162,10 +162,10 @@ IMG2SDAT_EXEC=(
     "blockimgdiff.py" "common.py" "images.py" "img2sdat" "rangelib.py" "sparse_img.py"
 )
 CHECK_TOOLS "${IMG2SDAT_EXEC[@]}" && IMG2SDAT=false
-SAMFIRM_EXEC=(
-    "samfirm"
-)
-CHECK_TOOLS "${SAMFIRM_EXEC[@]}" && SAMFIRM=false
+
+SAMLOADER_EXEC="$TOOLS_DIR/venv/bin/samloader"
+[ -x "$SAMLOADER_EXEC" ] && SAMLOADER=false
+
 SIGNAPK_EXEC=(
     "signapk" "signapk.jar"
 )
@@ -224,14 +224,15 @@ if $IMG2SDAT; then
 
     BUILD "img2sdat" "$SRC_DIR/external/img2sdat" "${IMG2SDAT_CMDS[@]}"
 fi
-if $SAMFIRM; then
-    SAMFIRM_CMDS=(
-        "npm install"
-        "npm run build"
-        "cp -a \"dist/index.js\" \"$TOOLS_DIR/samfirm\""
+if $SAMLOADER; then
+    SAMLOADER_CMDS=(
+        "python3 -m venv \"$TOOLS_DIR/venv\""
+        "\"$TOOLS_DIR/venv/bin/python\" -m pip install --upgrade pip"
+        "\"$TOOLS_DIR/venv/bin/pip\" install ."
+        "test -x \"$TOOLS_DIR/venv/bin/samloader\""
     )
 
-    BUILD "samfirm.js" "$SRC_DIR/external/samfirm.js" "${SAMFIRM_CMDS[@]}"
+    BUILD "samloader" "$SRC_DIR/external/samloader" "${SAMLOADER_CMDS[@]}"
 fi
 if $SIGNAPK; then
     SIGNAPK_CMDS=(
