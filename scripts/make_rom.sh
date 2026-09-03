@@ -17,6 +17,8 @@
 #
 
 set -Eeuo pipefail
+source "$SRC_DIR/scripts/utils/build_utils.sh" || exit 1
+
 START=$SECONDS
 
 # [
@@ -27,13 +29,8 @@ WORK_DIR_HASH="$(echo -n "$COMMIT_HASH$CONFIG_HASH" | sha1sum | cut -d " " -f 1)
 
 FORCE=false
 BUILD_ROM=false
-BUILD_ZIP=false
-BUILD_TAR=false
 BUILD_TARGET_FILES=true
 BUILD_FLASHABLE_ZIP=true
-
-[[ "$TARGET_INSTALL_METHOD" == "zip" ]] && BUILD_ZIP=true
-[[ "$TARGET_INSTALL_METHOD" == "odin" ]] && BUILD_TAR=true
 
 while [ "$#" != 0 ]; do
     case "$1" in
