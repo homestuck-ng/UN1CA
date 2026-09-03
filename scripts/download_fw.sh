@@ -63,7 +63,6 @@ for i in "${TARGET_EXTRA_FIRMWARES[@]}"; do
 done
 
 FORCE=false
-FIRMWARE_VERSION=""
 while [ "$#" != 0 ]; do
     case "$1" in
         "-f" | "--force")
@@ -95,12 +94,7 @@ for i in "${FIRMWARES[@]}"; do
     echo
     echo "- Processing $MODEL firmware with $CSC CSC"
 
-    LATEST_FIRMWARE="$(GET_LATEST_FIRMWARE)"
-
-    if [ -z "$LATEST_FIRMWARE" ]; then
-        echo "! Latest firmware could not be fetched"
-        exit 1
-    fi
+    echo "  Requested firmware: $FIRMWARE_VERSION"
 
     echo "  Latest firmware: $LATEST_FIRMWARE"
 
