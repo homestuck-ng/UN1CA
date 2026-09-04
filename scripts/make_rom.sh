@@ -79,18 +79,6 @@ if $FORCE; then
 fi
 
 if $BUILD_ROM; then
-    MODEL=$(echo -n "$TARGET_FIRMWARE" | cut -d "/" -f 1)
-    REGION=$(echo -n "$TARGET_FIRMWARE" | cut -d "/" -f 2)
-
-    FIRMWARE_DIR="$ODIN_DIR/${MODEL}_${REGION}"
-
-    if [ ! -f "$FIRMWARE_DIR/.downloaded" ]; then
-        echo "- Firmware is not downloaded. Downloading..."
-        bash "$SRC_DIR/scripts/download_fw.sh"
-    else
-        echo "- Firmware already downloaded. Skipping download."
-    fi
-
     bash "$SRC_DIR/scripts/extract_fw.sh"
    # read -p "Breakpoint after extracting the firmware Detected! Press Enter to continue..."
 
