@@ -163,7 +163,7 @@ IMG2SDAT_EXEC=(
 )
 CHECK_TOOLS "${IMG2SDAT_EXEC[@]}" && IMG2SDAT=false
 
-SAMLOADER_EXEC="$TOOLS_DIR/venv/bin/samloader"
+SAMLOADER_EXEC="$OUT_DIR/tools/venv/bin/samloader"
 [ -x "$SAMLOADER_EXEC" ] && SAMLOADER=false
 
 SIGNAPK_EXEC=(
@@ -225,11 +225,13 @@ if $IMG2SDAT; then
     BUILD "img2sdat" "$SRC_DIR/external/img2sdat" "${IMG2SDAT_CMDS[@]}"
 fi
 if $SAMLOADER; then
+    SAMLOADER_DIR="$OUT_DIR/tools/venv"
+
     SAMLOADER_CMDS=(
-        "python3 -m venv \"$TOOLS_DIR/venv\""
-        "\"$TOOLS_DIR/venv/bin/python\" -m pip install --upgrade pip"
-        "\"$TOOLS_DIR/venv/bin/pip\" install ."
-        "test -x \"$TOOLS_DIR/venv/bin/samloader\""
+        "python3 -m venv \"$SAMLOADER_DIR\""
+        "\"$SAMLOADER_DIR/bin/python\" -m pip install --upgrade pip"
+        "\"$SAMLOADER_DIR/bin/pip\" install ."
+        "test -x \"$SAMLOADER_DIR/bin/samloader\""
     )
 
     BUILD "samloader" "$SRC_DIR/external/samloader" "${SAMLOADER_CMDS[@]}"

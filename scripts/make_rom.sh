@@ -27,7 +27,7 @@ WORK_DIR_HASH="$(echo -n "$COMMIT_HASH$CONFIG_HASH" | sha1sum | cut -d " " -f 1)
 
 FORCE=false
 BUILD_ROM=false
-BUILD_ZIP=false
+BUILD_ZIP=true
 BUILD_TAR=false
 
 [[ "$TARGET_INSTALL_METHOD" == "zip" ]] && BUILD_ZIP=true
@@ -79,21 +79,28 @@ if $FORCE; then
 fi
 
 if $BUILD_ROM; then
-    NEED_FW_DOWNLOAD=false
-    bash "$SRC_DIR/scripts/extract_fw.sh" &> /dev/null || NEED_FW_DOWNLOAD=true
-    if $NEED_FW_DOWNLOAD; then
+    MODEL=$(echo -n "$TARGET_FIRMWARE" | cut -d "/" -f 1)
+    REGION=$(echo -n "$TARGET_FIRMWARE" | cut -d "/" -f 2)
+
+    FIRMWARE_DIR="$ODIN_DIR/${MODEL}_${REGION}"
+
+    if [ ! -f "$FIRMWARE_DIR/.downloaded" ]; then
+        echo "- Firmware is not downloaded. Downloading..."
         bash "$SRC_DIR/scripts/download_fw.sh"
-        bash "$SRC_DIR/scripts/extract_fw.sh"
+    else
+        echo "- Firmware already downloaded. Skipping download."
     fi
+
+    bash "$SRC_DIR/scripts/extract_fw.sh"
    # read -p "Breakpoint after extracting the firmware Detected! Press Enter to continue..."
 
     echo -e "- Creating work dir..."
     bash "$SRC_DIR/scripts/internal/create_work_dir.sh"
-
-    echo -e "\n- Applying ROM patches..."
-    bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/patches"
-        [[ -d "$SRC_DIR/target/$TARGET_CODENAME/patches" ]] \
-        && bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/target/$TARGET_CODENAME/patches"
+#
+#   echo -e "\n- Applying ROM patches..."
+#   bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/patches"
+#       [[ -d "$SRC_DIR/target/$TARGET_CODENAME/patches" ]] \
+#       && bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/target/$TARGET_CODENAME/patches"
 
 #    echo -e "\n- Applying ROM mods..."
 #    bash "$SRC_DIR/scripts/internal/apply_modules.sh" "$SRC_DIR/unica/mods"

@@ -25,13 +25,13 @@ DOWNLOAD_FIRMWARE()
 
     echo "- Downloading $MODEL firmware with $CSC CSC..."
 
-    samloader \
-        -m "$MODEL" \
-        -r "$CSC" \
-        -i "$IMEI" \
-        download \
-        -v "$FIRMWARE_VERSION" \
-        -O "$OUT"
+    "$OUT_DIR/tools/venv/bin/samloader" \
+    -m "$MODEL" \
+    -r "$CSC" \
+    -i "$IMEI" \
+    download \
+    -v "$FIRMWARE_VERSION" \
+    -O "$OUT"
 
     ZIP_FILE="$(find "$OUT" -type f -name "*.zip" | sort -r | head -n 1)"
 
